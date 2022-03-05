@@ -23,6 +23,19 @@ mongoose.connection
   .on("error", (error) => console.log(error));
 ;
 
+// Models //
+const { Schema, model } = mongoose;
+
+// Reviews Schema //
+const reviewsSchema = new Schema({
+  name: String,
+  description: String,
+  rating: Number,
+});
+
+// Review Model //
+const Review = model('Review', reviewsSchema);
+
 // Views Engine - App Object Engine //
 const app = express();
 app.engine('jsx', require('express-react-views').createEngine());
@@ -38,6 +51,38 @@ app.use(express.static('public'));
 app.get('/', (req, res) => {
     res.send(`Wldlfe server is running`)
 });
+
+
+// Seed Route //
+app.get('/reviews/seed', (req, res) => {
+  const startReviews = [
+    { name: `Dan`, description: `fantastic`, rating: 5 },
+    { name: `David`, description: `awesome`, rating: 5 },
+    { name: `Ken`, description: `terrific`, rating: 5 },
+    { name: `Jason`, description: `otherworldly`, rating: 5 },
+    { name: `Albert`, description: `good`, rating: 5 },
+  ]
+  Review.deleteMany({}).then((data) => {
+    Review.create(startReviews).then((data) => {
+      res.json(data);
+    })
+  }).catch((err) => {
+    res.status(400).send(err)
+  })
+});
+
+
+// Index Route //
+app.get('/reviews', (req, res) => {
+  Review.find({})
+    .then((reviews) => {
+      res.render('reviews/Index', { reviews });
+    })
+    .catch((error) => {
+      res.json({ error })
+    })
+});
+
 
 
 // Listening to PORT 8000 //
